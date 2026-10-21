@@ -4,6 +4,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import com.example.myapplication.ui.screens.ResultScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import org.junit.Assert.assertTrue
 import org.junit.Rule

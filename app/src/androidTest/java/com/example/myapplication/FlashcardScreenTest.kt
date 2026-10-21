@@ -9,6 +9,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import com.example.myapplication.data.getFlashcards
+import com.example.myapplication.ui.screens.FlashcardScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.example.myapplication.ui.screens.CourseSelectionScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule

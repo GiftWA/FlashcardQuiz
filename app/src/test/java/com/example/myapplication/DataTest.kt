@@ -1,5 +1,8 @@
 package com.example.myapplication
 
+import com.example.myapplication.data.getFlashcards
+import com.example.myapplication.data.getQuizQuestions
+import com.example.myapplication.data.getTopics
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

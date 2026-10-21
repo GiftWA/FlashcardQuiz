@@ -4,6 +4,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
+import com.example.myapplication.ui.screens.TopicSelectionScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
