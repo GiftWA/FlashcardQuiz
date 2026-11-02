@@ -273,48 +273,7 @@ fun AboutScreen(onBackClick: () -> Unit) {
 
                 TechChipRow(listOf("Kotlin", "Jetpack Compose", "Material Design 3"))
                 Spacer(Modifier.height(8.dp))
-                TechChipRow(listOf("Kotlin Coroutines", "Gemini Flash API"))
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // ---- Peer-Reviewed Curricula banner ----
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "🛡", fontSize = 18.sp)
-                }
-                Spacer(Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Peer-Reviewed Curricula",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Color(0xFF1F2933),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "All card algorithms and protocols conform to standard departmental syllabi.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF52606D)
-                    )
-                }
+                TechChipRow(listOf("Kotlin Coroutines"))
             }
         }
 

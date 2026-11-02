@@ -115,6 +115,12 @@ fun AppContent() {
     val savedFlashcardTopics = remember { mutableStateListOf<String>() }
     // Note = Triple(topic, cardIndex, text)
     val savedNotes = remember { mutableStateListOf<Triple<String, Int, String>>() }
+    // Every finished quiz, used for the Profile statistics and Quizzes progress.
+    val quizResults = remember { mutableStateListOf<QuizResult>() }
+    // Courses the user added, the profile details, and the last flashcard deck opened.
+    var userName by remember { mutableStateOf("Guest Student") }
+    var userTrack by remember { mutableStateOf("Computer Science Track") }
+    var lastStudied by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     val secondaryScreens = setOf("topics", "flashcards", "quiz", "result", "about")
     val isSecondary = currentScreen in secondaryScreens
@@ -160,7 +166,8 @@ fun AppContent() {
                             selectedTopic = topic
                             currentScreen = "quiz"
                         },
-                        onBackClick = onBack
+                        onBackClick = onBack,
+                        completedTopics = quizResults.map { it.topic }.distinct()
                     )
                     "flashcards" -> FlashcardScreen(
                         course = selectedCourse,
@@ -173,6 +180,7 @@ fun AppContent() {
                             if (!savedFlashcardTopics.contains(selectedTopic)) {
                                 savedFlashcardTopics.add(selectedTopic)
                             }
+                            lastStudied = selectedCourse to selectedTopic
                         }
                     )
                     "quiz" -> QuizScreen(
@@ -182,6 +190,7 @@ fun AppContent() {
                         onQuizFinished = { score, total ->
                             quizScore = score
                             quizTotal = total
+                            quizResults.add(QuizResult(selectedCourse, selectedTopic, score, total))
                             currentScreen = "result"
                         }
                     )
@@ -231,6 +240,14 @@ fun AppContent() {
                     onCourseSelected = { course ->
                         selectedCourse = course
                         currentScreen = "topics"
+                    },
+                    quizResults = quizResults,
+                    studiedTopics = savedFlashcardTopics,
+                    continueStudying = lastStudied,
+                    onContinueStudying = { course, topic ->
+                        selectedCourse = course
+                        selectedTopic = topic
+                        currentScreen = "flashcards"
                     }
                 )
                 AppDestination.STUDY -> CourseSelectionScreen(
@@ -247,6 +264,7 @@ fun AppContent() {
                         currentScreen = "quiz"
                     },
                     savedTopics = savedQuizTopics,
+                    completedTopics = quizResults.map { it.topic }.distinct(),
                     onToggleSave = { topic ->
                         if (savedQuizTopics.contains(topic)) {
                             savedQuizTopics.remove(topic)
@@ -267,10 +285,20 @@ fun AppContent() {
                     onOpenFlashcardTopic = { topic ->
                         selectedTopic = topic
                         currentScreen = "flashcards"
-                    }
+                    },
+                    onExploreFlashcards = { currentTab = AppDestination.STUDY }
                 )
                 AppDestination.PROFILE -> ProfileTabScreen(
-                    onAboutClick = { currentScreen = "about" }
+                    onAboutClick = { currentScreen = "about" },
+                    userName = userName,
+                    userTrack = userTrack,
+                    onSaveProfile = { name, track ->
+                        userName = name
+                        userTrack = track
+                    },
+                    quizResults = quizResults,
+                    studiedTopics = savedFlashcardTopics,
+                    notesCount = savedNotes.size
                 )
             }
         }

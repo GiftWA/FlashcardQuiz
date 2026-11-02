@@ -91,7 +91,9 @@ fun TopicSelectionScreen(
     course: String,
     onTopicStudy: (String) -> Unit,
     onTopicQuiz: (String) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    completedTopics: List<String> = emptyList(),
+    courseCategory: String? = null
 ) {
     data class TopicMeta(
         val topic: String,
@@ -150,7 +152,10 @@ fun TopicSelectionScreen(
     val totalCards = topics.sumOf { getFlashcards(it).size }
     val totalQuestions = topics.sumOf { getQuizQuestions(it).size }
 
-    val category = when (course) {
+    val doneCount = topics.count { completedTopics.contains(it) }
+    val progress = if (topics.isEmpty()) 0f else doneCount.toFloat() / topics.size
+
+    val category = courseCategory ?: when (course) {
         "Database Management", "Mobile Application Development" -> "Practical"
         "Computer Networks", "Operating Systems" -> "Theoretical"
         else -> "Course"
@@ -211,7 +216,7 @@ fun TopicSelectionScreen(
                 Spacer(Modifier.height(12.dp))
 
                 Text(
-                    text = "${topics.size} Topics · $totalCards Flashcards · $totalQuestions Quizzes · ~2.5 hrs est.",
+                    text = "${topics.size} Topics · $totalCards Flashcards · $totalQuestions Quizzes",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color(0xFF52606D)
                 )
@@ -222,8 +227,8 @@ fun TopicSelectionScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Module Progress", style = MaterialTheme.typography.labelSmall, color = Color(0xFF52606D))
-                    Text("35%", style = MaterialTheme.typography.labelSmall, color = Color(0xFF1565C0), fontWeight = FontWeight.SemiBold)
+                    Text("Quizzes Completed", style = MaterialTheme.typography.labelSmall, color = Color(0xFF52606D))
+                    Text("$doneCount of ${topics.size}", style = MaterialTheme.typography.labelSmall, color = Color(0xFF1565C0), fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(Modifier.height(4.dp))
                 Box(
@@ -235,7 +240,7 @@ fun TopicSelectionScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.35f)
+                            .fillMaxWidth(progress)
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp))
                             .background(Color(0xFF1565C0))
@@ -272,6 +277,36 @@ fun TopicSelectionScreen(
         }
 
         Spacer(Modifier.height(12.dp))
+
+        if (topics.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No topics yet",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFF1F2933),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Topics for this course will appear here.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF52606D),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
 
         topics.forEachIndexed { index, topic ->
             val meta = metaFor(course, topic)

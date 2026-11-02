@@ -108,30 +108,6 @@ fun SplashScreen(onFinished: () -> Unit) {
             .background(Color(0xFFF5F7FA))
             .systemBarsPadding()
     ) {
-        // Top-right "CS Recall" pill
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(24.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFFE3F2FD))
-                .padding(horizontal = 10.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(6.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF1565C0))
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(
-                text = "CS Recall",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color(0xFF1565C0)
-            )
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -174,64 +150,9 @@ fun SplashScreen(onFinished: () -> Unit) {
                 color = Color(0xFF52606D),
                 textAlign = TextAlign.Center
             )
-
-            Spacer(Modifier.height(36.dp))
-
-            // Preparing modules progress card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Preparing modules",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = Color(0xFF52606D)
-                        )
-                        Text(
-                            text = "100%",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = Color(0xFF1565C0),
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(Color(0xFFD9E3F1))
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(1f)
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(Color(0xFF1565C0))
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = "Ready.",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF52606D)
-                    )
-                }
-            }
         }
 
-        // Bottom version pill + tagline
+        // Bottom tagline
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -239,16 +160,6 @@ fun SplashScreen(onFinished: () -> Unit) {
                 .alpha(alpha),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "v1.0 • Academic Edition",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color(0xFF52606D),
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFE3F2FD))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            )
-            Spacer(Modifier.height(6.dp))
             Text(
                 text = "Algorithms • Systems • Architecture",
                 style = MaterialTheme.typography.labelSmall,

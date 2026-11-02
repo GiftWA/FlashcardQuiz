@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
@@ -87,7 +88,10 @@ import com.example.myapplication.data.*
 import com.example.myapplication.ui.components.*
 
 @Composable
-fun CourseSelectionScreen(onCourseClick: (String) -> Unit, onBackClick: () -> Unit) {
+fun CourseSelectionScreen(
+    onCourseClick: (String) -> Unit,
+    onBackClick: () -> Unit
+) {
     data class CourseMeta(
         val title: String,
         val category: String,
@@ -262,33 +266,6 @@ fun CourseSelectionScreen(onCourseClick: (String) -> Unit, onBackClick: () -> Un
                     }
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Add Custom Course Button (Single instance at the bottom)
-        var showAddDialog by remember { mutableStateOf(false) }
-        OutlinedButton(
-            onClick = { showAddDialog = true },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(16.dp),
-            border = BorderStroke(2.dp, Color(0xFF1565C0)),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF1565C0))
-        ) {
-            Text("+ Add Custom Course", fontWeight = FontWeight.SemiBold)
-        }
-
-        if (showAddDialog) {
-            androidx.compose.material3.AlertDialog(
-                onDismissRequest = { showAddDialog = false },
-                title = { Text("Add Custom Course") },
-                text = { Text("This feature requires a persistent database and will be available in a future update.") },
-                confirmButton = {
-                    TextButton(onClick = { showAddDialog = false }) { Text("OK") }
-                }
-            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))

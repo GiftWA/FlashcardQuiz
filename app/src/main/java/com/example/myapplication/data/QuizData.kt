@@ -3,7 +3,9 @@ package com.example.myapplication.data
 data class QuizQuestion(
     val question: String,
     val options: List<String>,
-    val correctAnswer: String
+    val correctAnswer: String,
+    // Sentence copied from the course resource that proves the answer (used to check generated content)
+    val evidence: String = ""
 )
 
 fun getQuizQuestions(topic: String): List<QuizQuestion> {

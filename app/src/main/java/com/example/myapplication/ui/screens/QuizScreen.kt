@@ -98,11 +98,11 @@ fun QuizScreen(
     var selectedAnswer by remember { mutableStateOf("") }
     var score by remember { mutableStateOf(0) }
 
-    // Simulated loading state (future Gemini API will actually load here)
+    // Short loading state shown before the first question
     var isLoading by remember { mutableStateOf(true) }
     var hasError by remember { mutableStateOf(false) }
 
-    // Brief simulated load
+    // Brief wait before the questions appear
     LaunchedEffect(topic) {
         isLoading = true
         hasError = false
@@ -150,16 +150,6 @@ fun QuizScreen(
                 text = "Retrieving questions from module library",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary
-            )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text = "Syncing: $topic • Q1–Q${questions.size}",
-                style = MaterialTheme.typography.labelSmall,
-                color = BrandBlue,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFE3F2FD))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
         return
@@ -256,15 +246,6 @@ fun QuizScreen(
                 style = MaterialTheme.typography.labelMedium,
                 color = TextSecondary
             )
-            Text(
-                text = "Active Session",
-                style = MaterialTheme.typography.labelSmall,
-                color = BrandBlue,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFE3F2FD))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            )
         }
         Spacer(Modifier.height(8.dp))
         // Progress bar
@@ -307,7 +288,6 @@ fun QuizScreen(
                         .background(Color(0xFFE3F2FD))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 )
-                }
                 Spacer(Modifier.height(12.dp))
                 Text(
                     text = currentQuestion.question,
@@ -316,7 +296,7 @@ fun QuizScreen(
                     fontWeight = FontWeight.SemiBold
                 )
             }
-
+        }
 
         Spacer(Modifier.height(16.dp))
 

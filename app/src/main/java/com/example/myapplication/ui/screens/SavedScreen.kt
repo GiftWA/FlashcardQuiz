@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
@@ -92,7 +93,8 @@ fun SavedTabScreen(
     savedFlashcardTopics: List<String>,
     savedNotes: List<Triple<String, Int, String>>,
     onStartQuiz: (course: String, topic: String) -> Unit,
-    onOpenFlashcardTopic: (topic: String) -> Unit
+    onOpenFlashcardTopic: (topic: String) -> Unit,
+    onExploreFlashcards: () -> Unit = {}
 ) {
     var selectedChip by remember { mutableStateOf("All Saved") }
 
@@ -156,12 +158,12 @@ fun SavedTabScreen(
             .verticalScroll(rememberScrollState())
             .padding(24.dp)
     ) {
-        // Segmented filter chips
+        // Segmented filter chips (all four fit on the screen)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             listOf(
                 "All Saved",
@@ -180,17 +182,24 @@ fun SavedTabScreen(
                     else         -> 0
                 }
 
-                Text(
-                    text = "$label ($count)",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = fg,
+                Box(
                     modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                         .clip(RoundedCornerShape(16.dp))
                         .background(bg)
                         .clickable { selectedChip = label }
-                        .padding(horizontal = 10.dp, vertical = 8.dp)
-                )
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "$label ($count)",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = fg,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
 
@@ -267,7 +276,8 @@ fun SavedTabScreen(
                 EmptySavedCard(
                     title = "No saved flashcards yet",
                     subtitle = "Flashcard decks you open will appear here.",
-                    ctaText = "Explore Flashcards"
+                    ctaText = "Explore Flashcards",
+                    onClick = onExploreFlashcards
                 )
             } else {
                 savedFlashcardTopics.forEachIndexed { index, topic ->
@@ -343,7 +353,8 @@ fun SavedTabScreen(
                 EmptySavedCard(
                     title = "No saved notes yet",
                     subtitle = "Notes you create while revising flashcards will appear here.",
-                    ctaText = "Explore Flashcards"
+                    ctaText = "Explore Flashcards",
+                    onClick = onExploreFlashcards
                 )
             } else {
                 savedNotes.forEachIndexed { index, (topic, cardIdx, text) ->
@@ -386,7 +397,8 @@ fun SavedTabScreen(
 private fun EmptySavedCard(
     title: String,
     subtitle: String,
-    ctaText: String
+    ctaText: String,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -422,7 +434,7 @@ private fun EmptySavedCard(
             )
             Spacer(Modifier.height(16.dp))
             Button(
-                onClick = { },
+                onClick = onClick,
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFE3F2FD),

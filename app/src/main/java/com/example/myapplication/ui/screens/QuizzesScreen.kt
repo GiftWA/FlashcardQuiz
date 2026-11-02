@@ -90,7 +90,8 @@ import com.example.myapplication.ui.components.*
 fun QuizzesTabScreen(
     onStartQuiz: (course: String, topic: String) -> Unit,
     savedTopics: List<String>,
-    onToggleSave: (String) -> Unit
+    onToggleSave: (String) -> Unit,
+    completedTopics: List<String> = emptyList()
 ) {
     // Build the list of all 16 quizzes (one per topic across all 4 courses)
     data class QuizEntry(
@@ -177,7 +178,10 @@ fun QuizzesTabScreen(
             .verticalScroll(rememberScrollState())
             .padding(24.dp)
     ) {
-        // Weekly goal banner
+        // Quiz progress banner (quizzes completed so far)
+        val completedCount = allQuizzes.count { completedTopics.contains(it.topic) }
+        val progressFraction = if (allQuizzes.isEmpty()) 0f
+            else (completedCount.toFloat() / allQuizzes.size).coerceIn(0f, 1f)
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -196,12 +200,12 @@ fun QuizzesTabScreen(
                 ) {
                     Column {
                         Text(
-                            text = "WEEKLY DRILL GOAL",
+                            text = "QUIZ PROGRESS",
                             style = MaterialTheme.typography.labelSmall,
                             color = Color(0xFF1565C0)
                         )
                         Text(
-                            text = "3 of 5 Mastered",
+                            text = "$completedCount of ${allQuizzes.size} Completed",
                             style = MaterialTheme.typography.titleMedium,
                             color = Color(0xFF1F2933),
                             fontWeight = FontWeight.SemiBold
@@ -227,7 +231,7 @@ fun QuizzesTabScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.6f)
+                            .fillMaxWidth(progressFraction)
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp))
                             .background(Color(0xFF1565C0))

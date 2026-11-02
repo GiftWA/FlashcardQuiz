@@ -1,6 +1,11 @@
 package com.example.myapplication.data
 
-data class Flashcard(val question: String, val answer: String)
+data class Flashcard(
+    val question: String,
+    val answer: String,
+    // Sentence copied from the course resource that proves the answer (used to check generated content)
+    val evidence: String = ""
+)
 
 fun getFlashcards(topic: String): List<Flashcard> {
     return when (topic) {

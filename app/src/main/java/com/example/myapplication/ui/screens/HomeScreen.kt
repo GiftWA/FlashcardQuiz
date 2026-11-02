@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
@@ -106,17 +107,33 @@ fun HomeScreen(
     onStudyClick: () -> Unit,
     onQuizClick: () -> Unit,
     onAboutClick: () -> Unit,
-    onCourseSelected: (String) -> Unit
+    onCourseSelected: (String) -> Unit,
+    quizResults: List<QuizResult> = emptyList(),
+    studiedTopics: List<String> = emptyList(),
+    continueStudying: Pair<String, String>? = null,
+    onContinueStudying: (String, String) -> Unit = { _, _ -> }
 ) {
     var selectedChip by remember { mutableStateOf("All") }
     var searchQuery by remember { mutableStateOf("") }
 
-    val allCourses = listOf(
-        Triple("Database Management", "Practical", 4),
-        Triple("Computer Networks", "Theoretical", 4),
-        Triple("Operating Systems", "Theoretical", 4),
-        Triple("Mobile Application Development", "Practical", 4)
-    )
+    val homeCourses = courseItems
+    val allCourses = homeCourses.map { Triple(it.name, it.category, 4) }
+
+    // Real statistics from what the user has done since opening the app
+    val quizzesTaken = quizResults.size
+    val averageScore = if (quizResults.isEmpty()) "-" else {
+        val percents = quizResults.map { if (it.total > 0) it.score * 100 / it.total else 0 }
+        "${percents.sum() / percents.size}%"
+    }
+    val cardsStudied = studiedTopics.sumOf { getFlashcards(it).size }
+
+    // Filter chip: show only the courses of the chosen category
+    val visibleCourses = homeCourses.filter { c ->
+        when (selectedChip) {
+            "Theoretical", "Practical", "Mathematical" -> c.category == selectedChip
+            else -> true
+        }
+    }
 
     val searchResults = if (searchQuery.isBlank()) {
         emptyList()
@@ -295,93 +312,111 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Continue Studying
-        Text(
-            text = "Continue Studying",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF1F2933)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        // Continue Studying (shown once the user has opened a flashcard deck)
+        if (continueStudying != null) {
+            val (lastCourse, lastTopic) = continueStudying
+            val lastQuiz = quizResults.lastOrNull { it.topic == lastTopic }
+            val lastQuizPercent =
+                if (lastQuiz != null && lastQuiz.total > 0) lastQuiz.score * 100 / lastQuiz.total else null
+            val lastIcon = homeCourses.firstOrNull { it.name == lastCourse }?.icon ?: Icons.Outlined.MenuBook
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onStudyClick() },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(
+            Text(
+                text = "Continue Studying",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1F2933)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .clickable { onContinueStudying(lastCourse, lastTopic) },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Color(0xFFE3F2FD))
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Database Management",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF1F2933)
-                        )
-                        Text(
-                            text = "Relational Model • Card 8 of 12",
-                            fontSize = 12.sp,
-                            color = Color(0xFF52606D)
-                        )
-                    }
-                    Text(
-                        text = "Resume",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1565C0)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Mastery Pace", fontSize = 11.sp, color = Color(0xFF52606D))
-                    Text("65%", fontSize = 11.sp, color = Color(0xFF1565C0), fontWeight = FontWeight.SemiBold)
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(Color(0xFFD9E3F1))
+                        .padding(16.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(Color(0xFF1565C0))
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Color(0xFFE3F2FD)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            androidx.compose.material3.Icon(
+                                imageVector = lastIcon,
+                                contentDescription = null,
+                                tint = Color(0xFF1565C0),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = lastCourse,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1F2933)
+                            )
+                            Text(
+                                text = "$lastTopic • ${getFlashcards(lastTopic).size} Cards",
+                                fontSize = 12.sp,
+                                color = Color(0xFF52606D)
+                            )
+                        }
+                        Text(
+                            text = "Resume",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF1565C0)
+                        )
+                    }
+                    if (lastQuizPercent != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Last quiz score", fontSize = 11.sp, color = Color(0xFF52606D))
+                            Text("$lastQuizPercent%", fontSize = 11.sp, color = Color(0xFF1565C0), fontWeight = FontWeight.SemiBold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(Color(0xFFD9E3F1))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(lastQuizPercent / 100f)
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp))
+                                    .background(Color(0xFF1565C0))
+                            )
+                        }
+                    }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+        }
 
         // Stats row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            StatTile(value = "14", label = "Quizzes taken", modifier = Modifier.weight(1f))
-            StatTile(value = "82%", label = "Average score", modifier = Modifier.weight(1f))
-            StatTile(value = "128", label = "Cards studied", modifier = Modifier.weight(1f))
+            StatTile(value = quizzesTaken.toString(), label = "Quizzes taken", modifier = Modifier.weight(1f))
+            StatTile(value = averageScore, label = "Average score", modifier = Modifier.weight(1f))
+            StatTile(value = cardsStudied.toString(), label = "Cards studied", modifier = Modifier.weight(1f))
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -411,7 +446,37 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Course cards, two per row. Every card has the same fixed height.
-        courseItems.chunked(2).forEach { rowItems ->
+        if (visibleCourses.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No courses found",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF1F2933)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "There are no courses in this category yet.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF52606D),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+        visibleCourses.chunked(2).forEach { rowItems ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -420,12 +485,15 @@ fun HomeScreen(
                     CourseGridCard(
                         title = course.name,
                         category = course.category,
-                        topicCount = 4,
+                        topicCount = getTopics(course.name).size,
                         difficulty = course.difficulty,
                         icon = course.icon,
                         onClick = { onCourseSelected(course.name) },
                         modifier = Modifier.weight(1f)
                     )
+                }
+                if (rowItems.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))

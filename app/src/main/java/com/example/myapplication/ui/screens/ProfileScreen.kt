@@ -88,8 +88,26 @@ import com.example.myapplication.ui.components.*
 
 @Composable
 fun ProfileTabScreen(
-    onAboutClick: () -> Unit
+    onAboutClick: () -> Unit,
+    userName: String = "Guest Student",
+    userTrack: String = "Computer Science Track",
+    onSaveProfile: (String, String) -> Unit = { _, _ -> },
+    quizResults: List<QuizResult> = emptyList(),
+    studiedTopics: List<String> = emptyList(),
+    notesCount: Int = 0
 ) {
+    var showEdit by remember { mutableStateOf(false) }
+    val initials = userName.trim().split(" ").filter { it.isNotEmpty() }.take(2)
+        .joinToString("") { it.first().uppercase() }.ifEmpty { "G" }
+
+    // Real statistics from what the user has done since opening the app
+    val quizzesTaken = quizResults.size
+    val averageScore = if (quizResults.isEmpty()) "-" else {
+        val percents = quizResults.map { if (it.total > 0) it.score * 100 / it.total else 0 }
+        "${percents.sum() / percents.size}%"
+    }
+    val cardsStudied = studiedTopics.sumOf { getFlashcards(it).size }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -121,7 +139,7 @@ fun ProfileTabScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "GS",
+                                text = initials,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1565C0)
@@ -149,7 +167,7 @@ fun ProfileTabScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Guest Student",
+                            text = userName,
                             style = MaterialTheme.typography.titleMedium,
                             color = Color(0xFF1F2933),
                             fontWeight = FontWeight.Bold
@@ -161,7 +179,7 @@ fun ProfileTabScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "Computer Science Track",
+                            text = userTrack,
                             style = MaterialTheme.typography.labelSmall,
                             color = Color(0xFF1565C0),
                             modifier = Modifier
@@ -177,35 +195,11 @@ fun ProfileTabScreen(
                         color = Color(0xFF52606D),
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable { }
+                            .clickable { showEdit = true }
                             .padding(6.dp)
                     )
                 }
 
-                Spacer(Modifier.height(12.dp))
-
-                // Academic term bar
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF5F7FA))
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Systems & Database Track",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color(0xFF1F2933),
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "Semester IV",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF52606D)
-                    )
-                }
             }
         }
 
@@ -224,7 +218,7 @@ fun ProfileTabScreen(
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = "All Time Stat",
+                text = "This session",
                 style = MaterialTheme.typography.labelSmall,
                 color = Color(0xFF52606D)
             )
@@ -238,12 +232,12 @@ fun ProfileTabScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ProfileStatTile(
-                value = "24",
+                value = quizzesTaken.toString(),
                 label = "Quizzes Taken",
                 modifier = Modifier.weight(1f)
             )
             ProfileStatTile(
-                value = "82%",
+                value = averageScore,
                 label = "Average Score",
                 modifier = Modifier.weight(1f)
             )
@@ -254,13 +248,13 @@ fun ProfileTabScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ProfileStatTile(
-                value = "186",
+                value = cardsStudied.toString(),
                 label = "Cards Studied",
                 modifier = Modifier.weight(1f)
             )
             ProfileStatTile(
-                value = "7 Days",
-                label = "Current Streak",
+                value = notesCount.toString(),
+                label = "Notes Added",
                 modifier = Modifier.weight(1f)
             )
         }
@@ -279,98 +273,72 @@ fun ProfileTabScreen(
                 color = Color(0xFF1F2933),
                 fontWeight = FontWeight.SemiBold
             )
-            SmallTextLink(text = "View All", onClick = { })
         }
 
         Spacer(Modifier.height(10.dp))
 
-        // Activity 1
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
+        if (quizResults.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE3F2FD)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "✓", color = Color(0xFF1565C0), fontWeight = FontWeight.Bold)
-                }
-                Spacer(Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Completed Quiz: ER Diagrams",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Color(0xFF1F2933)
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = "Score: 90% • CS-204 Database Systems",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF52606D)
-                    )
-                }
                 Text(
-                    text = "Yesterday",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF52606D)
+                    text = "No activity yet. Complete a quiz and it will show up here.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF52606D),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 )
             }
-        }
-
-        Spacer(Modifier.height(10.dp))
-
-        // Activity 2
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE3F2FD)),
-                    contentAlignment = Alignment.Center
+        } else {
+            quizResults.takeLast(3).reversed().forEach { result ->
+                val percent = if (result.total > 0) result.score * 100 / result.total else 0
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Text(text = "📖", fontSize = 16.sp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE3F2FD)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "✓", color = Color(0xFF1565C0), fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Completed Quiz: ${result.topic}",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color(0xFF1F2933)
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = "Score: $percent% • ${result.course}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFF52606D)
+                            )
+                        }
+                        Text(
+                            text = "${result.score}/${result.total}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color(0xFF52606D)
+                        )
+                    }
                 }
-                Spacer(Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Studied 12 Flashcards: Relational Model",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Color(0xFF1F2933)
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = "Mastery: +15% • Normal Forms & Schemas",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF52606D)
-                    )
-                }
-                Text(
-                    text = "2 days ago",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF52606D)
-                )
+                Spacer(Modifier.height(10.dp))
             }
         }
 
@@ -388,12 +356,12 @@ fun ProfileTabScreen(
                     icon = "👤",
                     title = "Edit Profile",
                     subtitle = "Update personal info and department",
-                    onClick = { }
+                    onClick = { showEdit = true }
                 )
                 SettingsRow(
                     icon = "ℹ",
                     title = "About FlashcardQuiz",
-                    subtitle = "Version 2.4.0 • Academic Build",
+                    subtitle = "Version 1.0",
                     onClick = onAboutClick
                 )
                 SettingsRow(
@@ -402,14 +370,53 @@ fun ProfileTabScreen(
                     subtitle = "Spaced repetition FAQ & support",
                     onClick = { }
                 )
-                SettingsRow(
-                    icon = "⏻",
-                    title = "Log Out",
-                    subtitle = "End session on this workstation",
-                    isDestructive = true,
-                    onClick = { }
-                )
             }
+        }
+
+        if (showEdit) {
+            var nameInput by remember { mutableStateOf(userName) }
+            var trackInput by remember { mutableStateOf(userTrack) }
+            val fieldColors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF1565C0),
+                focusedLabelColor = Color(0xFF1565C0),
+                cursorColor = Color(0xFF1565C0)
+            )
+
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showEdit = false },
+                title = { Text("Edit Profile") },
+                text = {
+                    Column {
+                        androidx.compose.material3.OutlinedTextField(
+                            value = nameInput,
+                            onValueChange = { nameInput = it },
+                            label = { Text("Full name") },
+                            singleLine = true,
+                            colors = fieldColors
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        androidx.compose.material3.OutlinedTextField(
+                            value = trackInput,
+                            onValueChange = { trackInput = it },
+                            label = { Text("Department or programme") },
+                            singleLine = true,
+                            colors = fieldColors
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onSaveProfile(
+                            nameInput.trim().ifEmpty { "Guest Student" },
+                            trackInput.trim().ifEmpty { "Computer Science Track" }
+                        )
+                        showEdit = false
+                    }) { Text("Save") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showEdit = false }) { Text("Cancel") }
+                }
+            )
         }
 
         Spacer(Modifier.height(24.dp))
