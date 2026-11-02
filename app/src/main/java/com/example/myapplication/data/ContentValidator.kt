@@ -12,9 +12,19 @@ object ContentValidator {
     private fun clean(text: String): String =
         text.lowercase().replace(Regex("\\s+"), " ").trim()
 
-    // True when the text appears in the resource (ignoring case and extra spaces)
-    fun isInResource(text: String, resource: String): Boolean =
-        text.isNotBlank() && clean(resource).contains(clean(text))
+    // Keeps only letters and digits, so line breaks, hyphens and quote styles from PDFs do not matter
+    private fun squash(text: String): String = text.lowercase().filter { it.isLetterOrDigit() }
+
+    // True when the text appears in the resource (ignoring case, spacing and punctuation)
+    fun isInResource(text: String, resource: String): Boolean {
+        val wanted = squash(text)
+        return wanted.isNotEmpty() && squash(resource).contains(wanted)
+    }
+
+    // An evidence sentence must be reasonably long and really come from the resource
+    private const val MIN_EVIDENCE_LETTERS = 15
+    private fun isGoodEvidence(evidence: String, resource: String): Boolean =
+        squash(evidence).length >= MIN_EVIDENCE_LETTERS && isInResource(evidence, resource)
 
     fun validateQuestion(q: QuizQuestion, resource: String? = null): List<String> {
         val problems = mutableListOf<String>()
@@ -29,7 +39,7 @@ object ContentValidator {
         val matches = q.options.count { clean(it) == clean(q.correctAnswer) }
         if (matches == 0) problems.add("Correct answer is not one of the options")
         if (matches > 1) problems.add("Correct answer appears more than once")
-        if (resource != null && !isInResource(q.evidence, resource)) {
+        if (resource != null && !isGoodEvidence(q.evidence, resource)) {
             problems.add("Evidence sentence was not found in the course resource")
         }
         return problems
@@ -59,7 +69,7 @@ object ContentValidator {
             if (c.question.isBlank()) problems.add("Card ${i + 1}: question is empty")
             if (c.answer.isBlank()) problems.add("Card ${i + 1}: answer is empty")
             if (clean(c.question) == clean(c.answer)) problems.add("Card ${i + 1}: answer repeats the question")
-            if (resource != null && !isInResource(c.evidence, resource)) {
+            if (resource != null && !isGoodEvidence(c.evidence, resource)) {
                 problems.add("Card ${i + 1}: evidence sentence was not found in the course resource")
             }
         }
@@ -76,5 +86,18 @@ object ContentValidator {
             problems.add("Topic \"$it\" is not in the resource")
         }
         return problems
+    }
+
+    // Keeps only the topics that pass every check. Returns null if nothing usable is left.
+    fun keepValid(course: GeneratedCourse, resource: String): GeneratedCourse? {
+        if (course.name.isBlank()) return null
+        val good = course.topics.filter { t ->
+            isInResource(t.name, resource) &&
+                validateFlashcards(t.flashcards, resource).isEmpty() &&
+                validateQuiz(t.quiz, resource).isEmpty()
+        }
+        if (good.isEmpty()) return null
+        val category = if (course.category in listOf("Theoretical", "Practical", "Mathematical")) course.category else "Theoretical"
+        return course.copy(category = category, topics = good)
     }
 }

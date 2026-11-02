@@ -84,6 +84,11 @@ import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.myapplication.data.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 import com.example.myapplication.ui.components.*
 import com.example.myapplication.ui.screens.*
 
@@ -121,6 +126,30 @@ fun AppContent() {
     var userName by remember { mutableStateOf("Guest Student") }
     var userTrack by remember { mutableStateOf("Computer Science Track") }
     var lastStudied by remember { mutableStateOf<Pair<String, String>?>(null) }
+
+    // Courses made from study material the student imported ("" = idle, "loading", "failed")
+    val importedCourses = remember { mutableStateListOf<GeneratedCourse>() }
+    var importStatus by remember { mutableStateOf("") }
+    var importError by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val pickMaterial = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            importStatus = "loading"
+            scope.launch {
+                val course = MaterialImporter.import(context, uri, BuildConfig.GEMINI_API_KEY)
+                if (course != null) {
+                    ContentStore.add(course)
+                    importedCourses.removeAll { it.name.equals(course.name, ignoreCase = true) }
+                    importedCourses.add(course)
+                    importStatus = ""
+                } else {
+                    importError = MaterialImporter.lastError
+                    importStatus = "failed"
+                }
+            }
+        }
+    }
 
     val secondaryScreens = setOf("topics", "flashcards", "quiz", "result", "about")
     val isSecondary = currentScreen in secondaryScreens
@@ -167,7 +196,8 @@ fun AppContent() {
                             currentScreen = "quiz"
                         },
                         onBackClick = onBack,
-                        completedTopics = quizResults.map { it.topic }.distinct()
+                        completedTopics = quizResults.map { it.topic }.distinct(),
+                        courseCategory = importedCourses.find { it.name == selectedCourse }?.category
                     )
                     "flashcards" -> FlashcardScreen(
                         course = selectedCourse,
@@ -248,14 +278,22 @@ fun AppContent() {
                         selectedCourse = course
                         selectedTopic = topic
                         currentScreen = "flashcards"
-                    }
+                    },
+                    importedCourses = importedCourses
                 )
                 AppDestination.STUDY -> CourseSelectionScreen(
                     onCourseClick = { course ->
                         selectedCourse = course
                         currentScreen = "topics"
                     },
-                    onBackClick = { currentTab = AppDestination.HOME }
+                    onBackClick = { currentTab = AppDestination.HOME },
+                    importedCourses = importedCourses,
+                    importStatus = importStatus,
+                    importError = importError,
+                    onImportClick = {
+                        importStatus = ""
+                        pickMaterial.launch(arrayOf("application/pdf", "text/plain"))
+                    }
                 )
                 AppDestination.QUIZZES -> QuizzesTabScreen(
                     onStartQuiz = { course, topic ->

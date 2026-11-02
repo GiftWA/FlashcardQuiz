@@ -9,6 +9,7 @@ data class QuizQuestion(
 )
 
 fun getQuizQuestions(topic: String): List<QuizQuestion> {
+    ContentStore.quizFor(topic)?.let { return it }
     return when (topic) {
         "Database Fundamentals" -> listOf(
             QuizQuestion("What is a primary key?", listOf("A key that uniquely identifies each row", "A key used only for sorting", "A key used to delete a database", "A key used to connect to Wi-Fi"), "A key that uniquely identifies each row"),

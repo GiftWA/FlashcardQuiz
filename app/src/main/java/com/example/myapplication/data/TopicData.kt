@@ -1,6 +1,7 @@
 package com.example.myapplication.data
 
 fun getTopics(course: String): List<String> {
+    ContentStore.topicsFor(course)?.let { return it }
     return when (course) {
         "Database Management" -> listOf(
             "Database Fundamentals", "ER Diagrams", "Relational Model", "Normalization"

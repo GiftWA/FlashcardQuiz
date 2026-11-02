@@ -8,6 +8,7 @@ data class Flashcard(
 )
 
 fun getFlashcards(topic: String): List<Flashcard> {
+    ContentStore.flashcardsFor(topic)?.let { return it }
     return when (topic) {
         "Database Fundamentals" -> listOf(
             Flashcard("What is a database?", "An organised collection of data that can be easily stored, accessed and managed."),

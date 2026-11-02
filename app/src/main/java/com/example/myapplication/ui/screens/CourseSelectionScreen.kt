@@ -90,7 +90,11 @@ import com.example.myapplication.ui.components.*
 @Composable
 fun CourseSelectionScreen(
     onCourseClick: (String) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    importedCourses: List<GeneratedCourse> = emptyList(),
+    importStatus: String = "",
+    onImportClick: () -> Unit = {},
+    importError: String = ""
 ) {
     data class CourseMeta(
         val title: String,
@@ -104,7 +108,11 @@ fun CourseSelectionScreen(
         CourseMeta("Computer Networks", "Theoretical", 4, "Advanced"),
         CourseMeta("Operating Systems", "Theoretical", 4, "Intermediate"),
         CourseMeta("Mobile Application Development", "Practical", 4, "Beginner")
-    )
+    ).let { builtIn ->
+        builtIn + importedCourses
+            .filter { imp -> builtIn.none { it.title.equals(imp.name, ignoreCase = true) } }
+            .map { CourseMeta(it.name, it.category, it.topics.size, "Imported") }
+    }
 
     var query by remember { mutableStateOf("") }
     var selectedChip by remember { mutableStateOf("All Courses") }
@@ -257,6 +265,7 @@ fun CourseSelectionScreen(
                             category = c.category,
                             topicCount = c.topicCount,
                             difficulty = c.difficulty,
+                            icon = if (c.difficulty == "Imported") Icons.Outlined.MenuBook else null,
                             onClick = { onCourseClick(c.title) },
                             modifier = Modifier.weight(1f)
                         )
@@ -265,6 +274,53 @@ fun CourseSelectionScreen(
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Import study material: the course and its topics come from the chosen document
+        OutlinedButton(
+            onClick = onImportClick,
+            enabled = importStatus != "loading",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(2.dp, Color(0xFF1565C0)),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF1565C0))
+        ) {
+            Text("+ Import Study Material", fontWeight = FontWeight.SemiBold)
+        }
+        if (importStatus == "loading") {
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = Color(0xFF1565C0)
+                )
+                Spacer(Modifier.width(10.dp))
+                Text("Preparing your course…", fontSize = 13.sp, color = Color(0xFF52606D))
+            }
+        }
+        if (importStatus == "failed") {
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = "We couldn't make a course from that file. Try a different file.",
+                fontSize = 13.sp,
+                color = Color(0xFFBA1A1A),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+            // TEMPORARY: shows the real reason while testing. Remove before submitting.
+            if (importError.isNotBlank()) {
+                Spacer(Modifier.height(6.dp))
+                Text(text = importError, fontSize = 11.sp, color = Color(0xFF52606D), modifier = Modifier.fillMaxWidth())
             }
         }
 

@@ -111,12 +111,15 @@ fun HomeScreen(
     quizResults: List<QuizResult> = emptyList(),
     studiedTopics: List<String> = emptyList(),
     continueStudying: Pair<String, String>? = null,
-    onContinueStudying: (String, String) -> Unit = { _, _ -> }
+    onContinueStudying: (String, String) -> Unit = { _, _ -> },
+    importedCourses: List<GeneratedCourse> = emptyList()
 ) {
     var selectedChip by remember { mutableStateOf("All") }
     var searchQuery by remember { mutableStateOf("") }
 
-    val homeCourses = courseItems
+    val homeCourses = courseItems + importedCourses
+        .filter { imp -> courseItems.none { it.name.equals(imp.name, ignoreCase = true) } }
+        .map { HomeCourse(it.name, it.category, "Imported", Icons.Outlined.MenuBook) }
     val allCourses = homeCourses.map { Triple(it.name, it.category, 4) }
 
     // Real statistics from what the user has done since opening the app
